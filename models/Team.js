@@ -4,7 +4,15 @@ const schema = new mongoose.Schema({
   title: { type: String },
   content: { type: String },
   memberNum: { type: String },
-  location: { type: Array, index: '2d'},
+  hasJoinNum: { type: Number ,default: 1 },
+  hasJoin: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
+  location: { type: [Number] },
+  city: { type: String },
+  distance: { type: Number ,default: 0 },
+  loc: {
+    type: {type: String},
+    coordinates: {type: [Number]}
+  },
   locationName: { type: String },
   date: { type: String },
   time: { type: String },
@@ -33,4 +41,5 @@ schema.virtual('newsList', {
   ref: 'Article'
 })
 */
+schema.index({location: '2dsphere'});
 module.exports = mongoose.model('Team', schema)

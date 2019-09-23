@@ -1,16 +1,24 @@
 module.exports = app => {
   const router = require('express').Router()
   const mongoose = require('mongoose')
-  const userController = require('../../plugins/wechat')
   const Topic = mongoose.model('Topic')
   const Team = mongoose.model('Team')
   const User = mongoose.model('User')
   const Comment = mongoose.model('Comment')
   const Label = mongoose.model('Label')
+  const userController = require('../../plugins/wechat')
 
+
+  require('./user')(router)
+  require('./message')(router)
+  // require('./geo')(router)
+
+  
 
   router.post('/topic', async (req, res) => {
-    const model = await Topic.create(req.body)
+    let data = req.body
+    data.city = await userController.getCity(data.location[0],data.location[1])               //location必须有
+    const model = await Topic.create(data)
     await User.findByIdAndUpdate(req.body.owner, {
       "$addToSet": {
         "topics": model._id,
@@ -20,16 +28,19 @@ module.exports = app => {
   })
 
   router.post('/team', async (req, res) => {
-    const model = await Team.create(req.body)
+    let data = req.body
+    data.city = await userController.getCity(data.location[0],data.location[1])               //location必须有
+    const model = await Team.create(data)
     await User.findByIdAndUpdate(req.body.owner, {
       "$addToSet": {
         "teams": model._id,
       }
     })
     res.send({ success: true })
+    
   })
 
-  router.get('/topic', async (req, res) => {
+  router.get('/topic/:lat/:lng', async (req, res) => {
     const topics = await Topic.find((err, result) => {
       if (err) {
         // return err.status(400).send({   
@@ -40,6 +51,7 @@ module.exports = app => {
     })
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
+      await userController.addDistance(req.params.lat,req.params.lng,topics)
     const data = topics.map(item => {
       item.goodCount = item.good.length
       // var date = item.updateAt
@@ -50,10 +62,13 @@ module.exports = app => {
     res.send(data)
   })
 
-  router.get('/team', async (req, res) => {
+  router.get('/team/:lat/:lng', async (req, res) => {
     const teams = await Team.find()
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
+
+      await userController.addDistance(req.params.lat,req.params.lng,teams)
+
     const data = teams.map(item => {
       item.goodCount = item.good.length
       item.collectCount = item.collect.length
@@ -63,65 +78,13 @@ module.exports = app => {
     res.send(data)
   })
 
-  router.post("/openid", userController.login)
-  //获取城市信息
-  router.post('/reverseGeocoder', userController.reverseGeocoder)
+  
 
-  router.post('/user', async (req, res) => {
-    const model = await User.findByIdAndUpdate(req.body.userid, {
-      "$set": {
-        "nickName": req.body.nickName,
-        "avatarUrl": req.body.avatarUrl
-      }
-    }, {
-      "fields": { "nickName": 1,"avatarUrl":1 },
-      "new": true
-    })
-    res.send(model)
-  })
+  
 
-  router.get('/user/:id', async (req, res) => {
-    const data = await User.findById(req.params.id, { openid: 0 })
-      .populate('topics', 'content images locationName good')
-      .populate('teams', 'postUrl locationName good collect')
-      .lean()
+  
 
-    const fans = await User.find({
-      interest: req.params.id
-    }, { _id: 1 })
-
-    data.interestCount = data.interest.length
-    data.fansCount = fans.length
-    res.send(data)
-  })
-
-  //关注
-  router.post('/interest', async (req, res) => {
-    await User.findByIdAndUpdate(req.body.userid, {
-      "$addToSet": {
-        "interest": req.body.myid
-      }
-    })
-    res.send({ success: true, msg: '关注成功' })
-  })
-
-  //获取我的关注
-  router.get('/user/interest/:id', async (req, res) => {
-    const data = await User.findById(req.params.id, { interest: 1 })
-      .populate('interest', 'nickName avatarUrl intro')
-      .lean()
-    res.send(data)
-  })
-
-  //获取我的粉丝
-  router.get('/user/fans/:id', async (req, res) => {
-    const data = await User.find({
-      interest: req.params.id
-    }, { nickName: 1, avatarUrl: 1, intro: 1 })
-      .lean()
-    res.send(data)
-  })
-
+  
   //点赞
   router.put('/topicLike', async (req, res) => {
     await Topic.findByIdAndUpdate(req.body.topicid, {
@@ -180,19 +143,7 @@ module.exports = app => {
     res.send({ success: true })
   })
 
-  //获取收藏列表
-  router.get('/user/collection/:id', async (req, res) => {
-    const collections = await Team.find({
-      collect: req.params.id
-    }, { postUrl: 1, locationName: 1, good: 1, collect: 1 })
-      .populate('owner', 'nickName avatarUrl intro').lean()
-      const data = collections.map(item => {
-        item.goodCount = item.good.length
-        item.collectCount = item.collect.length
-        return item
-      })
-    res.send(data)
-  })
+  
 
   //添加评论
   router.post('/comment', async (req, res) => {
@@ -222,22 +173,28 @@ module.exports = app => {
         $geoNear: {
           near: [23.12901, 113.2668],//{ type: "Point", coordinates: [ 0 , 0 ] },
           distanceField: "distance",
-          spherical: false
+          spherical: false,
+          distanceMultiplier: 6371
         }
       }
     ])
 
-
-
-    // .near({
-    //   near: [23.12901, 113.2668],
-    //   distanceField: "dist.calculated", // required
-    //   maxDistance: 0.008,
-    //   query: { type: "public" },
-    //   includeLocs: "dist.location",
-    //   uniqueDocs: true,
-    //   num: 5
+    // var options = { near: [23.12901, 113.2668], maxDistance: 5000 };
+    // const data2 = await Team.geoSearch({ type : "location" },  options, function(err, res) {
+    //   console.log(res);
     // });
+
+    //fail
+    // const coords = {type: 'Point', coordinates: [23, 113]};
+    //   await Team.find({loc: {$near: coords}}).exec(function(err, res) {
+    //     console.log(res);
+    //   });
+
+    //ok
+    // await Team.find({location: {$near: [23, 113]}}).exec(function(err, res) {
+    //   console.log(res);
+    // });
+
     res.send(data)
   })
 
@@ -256,6 +213,27 @@ module.exports = app => {
 
     res.send({ teams: teams , topics: topics})
   })
+
+  //筛选
+  router.post('/sieve', async (req, res) => {
+    if(req.body.type==0){
+      const teams = await Team.find({
+        labels:req.body.labels,
+        city:req.body.city
+      }).populate('owner', 'nickName avatarUrl intro').lean()
+  
+      const topics = await Topic.find({
+        labels:req.body.labels,
+        city:req.body.city
+      }).populate('owner', 'nickName avatarUrl intro').lean()
+    }else{
+
+    }
+    
+
+    res.send({ teams: teams , topics: topics})
+  })
+
 
 
   app.use('/weixin/api', router)

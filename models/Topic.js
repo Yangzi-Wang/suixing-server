@@ -3,8 +3,10 @@ const mongoose = require('mongoose')
 const schema = new mongoose.Schema({
   images:[{type:String}],
   content: { type: String },
-  location: { type: Array, index: '2d'},
+  location: { type: [Number], index: '2d'},
+  city: { type: String },
   locationName: { type: String },
+  labels: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Label' }],
   good: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   owner: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
 }, {
