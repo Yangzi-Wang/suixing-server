@@ -35,24 +35,30 @@ module.exports = router => {
             interest: req.body.id
         }, { _id: 1 })
 
-        data.interestCount = data.interest.length
-        data.fansCount = fans.length
+        if (data.interest)
+            data.interestCount = data.interest.length
+        else
+            data.interestCount = 0
+        if (fans)
+            data.fansCount = fans.length
+        else
+            data.fansCount = 0
 
         // data.teams.commentCount = comments.length
         data.teams.forEach(item => {
             item.goodCount = item.good.length
-      item.collectCount = item.collect.length
+            item.collectCount = item.collect.length
         });
 
         data.topics.forEach(item => {
             item.goodCount = item.good.length
         });
-      
 
-        try{
-            await userController.addDistance(req.body.lat,req.body.lng,data.teams)
-            await userController.addDistance(req.body.lat,req.body.lng,data.topics)
-        }catch (err) {
+
+        try {
+            await userController.addDistance(req.body.lat, req.body.lng, data.teams)
+            await userController.addDistance(req.body.lat, req.body.lng, data.topics)
+        } catch (err) {
             console.log(err)
         }
         res.send(data)
@@ -92,7 +98,7 @@ module.exports = router => {
         }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1 })
             .populate('owner', 'nickName avatarUrl intro').lean()
 
-            await userController.addDistance(req.body.lat,req.body.lng,collections)
+        await userController.addDistance(req.body.lat, req.body.lng, collections)
 
         const data = collections.map(item => {
             item.goodCount = item.good.length
@@ -103,22 +109,22 @@ module.exports = router => {
     })
 
     //获取评论信息
-  router.get('/messages/comment/:id', async (req, res) => {
-    const teams = await Team.find({
-      owner:req.params.id
-    },{_id:1})
-    const teamIdArr = teams.map(v => v._id)
+    router.get('/messages/comment/:id', async (req, res) => {
+        const teams = await Team.find({
+            owner: req.params.id
+        }, { _id: 1 })
+        const teamIdArr = teams.map(v => v._id)
 
-    const topics = await Topic.find({
-      owner:req.params.id
-    },{_id:1})
-    const topicIdArr = topics.map(v => v._id)
-    const idArr = teamIdArr.concat(topicIdArr)
-    const comments = await Comment.find({
-      to: { $in: idArr }
-    }).populate('owner', 'nickName avatarUrl')
-      .lean()
-    res.send(comments)
-  })
+        const topics = await Topic.find({
+            owner: req.params.id
+        }, { _id: 1 })
+        const topicIdArr = topics.map(v => v._id)
+        const idArr = teamIdArr.concat(topicIdArr)
+        const comments = await Comment.find({
+            to: { $in: idArr }
+        }).populate('owner', 'nickName avatarUrl')
+            .lean()
+        res.send(comments)
+    })
 
 }
