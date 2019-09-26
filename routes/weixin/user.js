@@ -4,11 +4,13 @@ module.exports = router => {
     const Topic = mongoose.model('Topic')
     const Team = mongoose.model('Team')
     const User = mongoose.model('User')
+    const Comment = mongoose.model('Comment')
 
     router.post("/openid", userController.login)
     //获取城市信息
     router.post('/reverseGeocoder', userController.reverseGeocoder)
 
+    //重新授权时，更新用户信息
     router.put('/user', async (req, res) => {
         const model = await User.findByIdAndUpdate(req.body.userid, {
             "$set": {
@@ -22,6 +24,7 @@ module.exports = router => {
         res.send(model)
     })
 
+    //获取用户信息、话题、组队
     router.post('/user', async (req, res) => {
         const data = await User.findById(req.body.id, { openid: 0 })
             .populate('topics', 'content images locationName location good')
@@ -34,6 +37,18 @@ module.exports = router => {
 
         data.interestCount = data.interest.length
         data.fansCount = fans.length
+
+        // data.teams.commentCount = comments.length
+        data.teams.forEach(item => {
+            item.goodCount = item.good.length
+      item.collectCount = item.collect.length
+        });
+
+        data.topics.forEach(item => {
+            item.goodCount = item.good.length
+        });
+      
+
         try{
             await userController.addDistance(req.body.lat,req.body.lng,data.teams)
             await userController.addDistance(req.body.lat,req.body.lng,data.topics)
@@ -86,5 +101,24 @@ module.exports = router => {
         })
         res.send(data)
     })
+
+    //获取评论信息
+  router.get('/messages/comment/:id', async (req, res) => {
+    const teams = await Team.find({
+      owner:req.params.id
+    },{_id:1})
+    const teamIdArr = teams.map(v => v._id)
+
+    const topics = await Topic.find({
+      owner:req.params.id
+    },{_id:1})
+    const topicIdArr = topics.map(v => v._id)
+    const idArr = teamIdArr.concat(topicIdArr)
+    const comments = await Comment.find({
+      to: { $in: idArr }
+    }).populate('owner', 'nickName avatarUrl')
+      .lean()
+    res.send(comments)
+  })
 
 }

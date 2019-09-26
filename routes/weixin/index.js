@@ -11,10 +11,10 @@ module.exports = app => {
 
   require('./user')(router)
   require('./message')(router)
-  // require('./geo')(router)
+  require('./region')(router)
 
   
-
+//提交话题
   router.post('/topic', async (req, res) => {
     let data = req.body
     data.city = await userController.getCity(data.location[0],data.location[1])               //location必须有
@@ -27,6 +27,7 @@ module.exports = app => {
     res.send({ success: true })
   })
 
+  //提交组队
   router.post('/team', async (req, res) => {
     let data = req.body
     data.city = await userController.getCity(data.location[0],data.location[1])               //location必须有
@@ -40,7 +41,8 @@ module.exports = app => {
     
   })
 
-  router.get('/topic/:lat/:lng', async (req, res) => {
+  //获取首页话题
+  router.get('/topics/:lat/:lng', async (req, res) => {
     const topics = await Topic.find((err, result) => {
       if (err) {
         // return err.status(400).send({   
@@ -62,27 +64,53 @@ module.exports = app => {
     res.send(data)
   })
 
-  router.get('/team/:lat/:lng', async (req, res) => {
+  //获取首页组队
+  router.get('/teams/:lat/:lng', async (req, res) => {
     const teams = await Team.find()
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
 
       await userController.addDistance(req.params.lat,req.params.lng,teams)
 
-    const data = teams.map(item => {
-      item.goodCount = item.good.length
+    const cmArr = await Comment.aggregate([
+      {$match: {}},
+     {$group: {_id: '$to', total: {$sum: 1}}}
+   ])
+
+    teams.forEach(item => {
+        item.goodCount = item.good.length
       item.collectCount = item.collect.length
-      return item
+      const cm = cmArr.filter(i=>{
+        return i._id.toString()==item._id
+      })
+      if(cm[0])
+      item.commentCount = cm[0].total
     })
-    // console.log(data)
-    res.send(data)
+      // console.log(teams)
+    
+    res.send(teams)
   })
 
-  
+  //组队详情
+  router.get('/team/:id', async (req, res) => {
+    let team = await Team.findById(req.params.id)
+      .populate('owner', 'nickName avatarUrl intro')
+      .populate('labels')
+      .lean()
 
-  
+      // await userController.addDistance(req.params.lat,req.params.lng,teams)
+     
+    const comments = await Comment.find({
+      to: req.params.id
+    }).populate('owner', 'nickName avatarUrl')
+      .lean()
 
-  
+      team.commentCount = comments.length
+      team.goodCount = team.good.length
+      team.collectCount = team.collect.length
+
+    res.send({team:team,comments:comments})
+  })
 
   
   //点赞
@@ -160,6 +188,8 @@ module.exports = app => {
     res.send(comments)
   })
 
+  
+
   //获取标签
   router.get('/labels', async (req, res) => {
     const data = await Label.find().lean()
@@ -207,9 +237,13 @@ module.exports = app => {
       ]
     }).populate('owner', 'nickName avatarUrl intro').lean()
 
+    await userController.addDistance(req.body.lat,req.body.lng,teams)
+
     const topics = await Topic.find({
          'content': eval("/" + req.body.key + "/i")
     }).populate('owner', 'nickName avatarUrl intro').lean()
+
+    await userController.addDistance(req.body.lat,req.body.lng,topics)
 
     res.send({ teams: teams , topics: topics})
   })

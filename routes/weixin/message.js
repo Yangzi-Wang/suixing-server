@@ -26,10 +26,13 @@ module.exports = router => {
   router.get('/messages/:id', async (req, res) => {
     const data = await Message.find({
       "$or": [
-        { participant: req.params.id },
-        { owner: req.params.id }
+        { participant: req.params.id,status: 1 },
+        { owner: req.params.id,status: 0 }
       ]
-    }).lean()
+    })
+    .populate('owner', 'nickName avatarUrl')
+    .populate('participant', 'nickName avatarUrl')
+    .lean()
     res.send(data)
   })
 }

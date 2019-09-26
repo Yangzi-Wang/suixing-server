@@ -52,7 +52,7 @@ module.exports = app => {
     const upload = multer({ dest: __dirname + '/../../uploads' })
     app.post('/admin/api/upload', authMiddleware(), upload.single('file'), async (req, res) => {
       const file = req.file
-      file.url = `http://sx.sh-invi.cn/uploads/${file.filename}`
+      file.url = `https://www.sh-invi.cn/uploads/${file.filename}`
       res.send(file)
     })
   /*
