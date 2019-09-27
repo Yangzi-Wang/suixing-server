@@ -9,10 +9,10 @@ const schema = new mongoose.Schema({
   location: { type: [Number] },
   city: { type: String },
   distance: { type: Number ,default: 0 },
-  loc: {
-    type: {type: String},
-    coordinates: {type: [Number]}
-  },
+  // loc: {
+  //   type: {type: String},
+  //   coordinates: {type: [Number]}
+  // },
   locationName: { type: String },
   date: { type: String },
   time: { type: String },
@@ -41,5 +41,5 @@ schema.virtual('newsList', {
   ref: 'Article'
 })
 */
-schema.index({location: '2dsphere'});
+schema.index({location: '2d'});
 module.exports = mongoose.model('Team', schema)
