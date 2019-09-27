@@ -42,8 +42,12 @@ module.exports = app => {
   })
 
   //获取首页话题
-  router.get('/topics/:lat/:lng', async (req, res) => {
-    const topics = await Topic.find((err, result) => {
+  router.post('/topics', async (req, res) => {
+    let options = {}
+    if(req.body.getNear){
+      options.location = {$near: [req.body.lat, req.body.lng]}
+    }
+    const topics = await Topic.find(options,(err, result) => {
       if (err) {
         // return err.status(400).send({   
         //   message: '错误',   
@@ -53,7 +57,7 @@ module.exports = app => {
     })
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
-      await userController.addDistance(req.params.lat,req.params.lng,topics)
+      await userController.addDistance(req.body.lat,req.body.lng,topics)
     const data = topics.map(item => {
       item.goodCount = item.good.length
       // var date = item.updateAt
@@ -65,12 +69,21 @@ module.exports = app => {
   })
 
   //获取首页组队
-  router.get('/teams/:lat/:lng', async (req, res) => {
-    const teams = await Team.find()
+  router.post('/teams', async (req, res) => {
+
+    let options = {}
+    if(req.body.getNear){
+      options.location = {
+        $near: [req.body.lat, req.body.lng],
+        $maxDistance: 0.5/111.12
+      }
+    }
+
+    const teams = await Team.find(options)
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
 
-      await userController.addDistance(req.params.lat,req.params.lng,teams)
+      await userController.addDistance(req.body.lat,req.body.lng,teams)
 
     const cmArr = await Comment.aggregate([
       {$match: {}},
