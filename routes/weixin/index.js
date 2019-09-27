@@ -31,7 +31,7 @@ module.exports = app => {
   router.post('/team', async (req, res) => {
     let data = req.body
     data.city = await userController.getCity(data.location[0],data.location[1])               //location必须有
-    const model = await Team.create(data)
+    const model = await Team.create(data).catch(err=>console.log(err))
     await User.findByIdAndUpdate(req.body.owner, {
       "$addToSet": {
         "teams": model._id,
