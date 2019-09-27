@@ -6,7 +6,7 @@ const schema = new mongoose.Schema({
   memberNum: { type: String },
   hasJoinNum: { type: Number ,default: 1 },
   hasJoin: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
-  location: { type: [Number] },
+  location: { type: [Number], index:'2d' },
   city: { type: String },
   distance: { type: Number ,default: 0 },
   // loc: {
@@ -41,5 +41,5 @@ schema.virtual('newsList', {
   ref: 'Article'
 })
 */
-schema.index({location: '2d'});
+// schema.index({location: '2d'});
 module.exports = mongoose.model('Team', schema)
