@@ -45,7 +45,10 @@ module.exports = app => {
   router.post('/topics', async (req, res) => {
     let options = {}
     if(req.body.getNear){
-      options.location = {$near: [req.body.lat, req.body.lng]}
+      options.location = {
+        $near: [req.body.lat, req.body.lng],
+        $maxDistance: 2/111.12
+      }
     }
     const topics = await Topic.find(options,(err, result) => {
       if (err) {
@@ -75,7 +78,7 @@ module.exports = app => {
     if(req.body.getNear){
       options.location = {
         $near: [req.body.lat, req.body.lng],
-        $maxDistance: 0.5/111.12
+        $maxDistance: 2/111.12
       }
     }
 
