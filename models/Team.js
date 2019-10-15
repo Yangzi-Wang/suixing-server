@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
+  status: { type: Number ,default: 0 },
   title: { type: String },
   content: { type: String },
   memberNum: { type: String },

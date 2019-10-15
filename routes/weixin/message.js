@@ -13,7 +13,7 @@ module.exports = router => {
   router.put('/message/:id', async (req, res) => {
     const message = await Message.findByIdAndUpdate(req.params.id, { status: 1 })
     //人数加一
-    await Team.findByIdAndUpdate(req.body.teamid, {
+    await Team.findByIdAndUpdate(message.team, {
       '$inc': { hasJoinNum: 1 },
       "$addToSet": {
         "hasJoin": message.participant

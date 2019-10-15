@@ -27,8 +27,18 @@ module.exports = router => {
     //获取用户信息、话题、组队
     router.post('/user', async (req, res) => {
         const data = await User.findById(req.body.id, { openid: 0 })
-            .populate('topics', 'content images locationName location good')
-            .populate('teams', 'postUrl locationName good collect location')
+            // .populate('topics', 'content images locationName location good')
+            .populate({
+                path: 'topics',
+                select: 'content images locationName location good owner updatedAt',
+                populate: { path: 'owner', select: 'nickName avatarUrl' }
+            })
+            .populate({
+                path: 'teams',
+                select: 'postUrl locationName good collect location owner updatedAt',
+                populate: { path: 'owner', select: 'nickName avatarUrl' }
+            })
+            //fail // .populate('teams', 'postUrl locationName good collect location owner.nickName owner.avatarUrl')
             .lean()
 
         const fans = await User.find({
@@ -45,23 +55,39 @@ module.exports = router => {
             data.fansCount = 0
 
         // data.teams.commentCount = comments.length
-        data.teams.forEach(item => {
-            item.goodCount = item.good.length
-            item.collectCount = item.collect.length
-        });
+        // data.teams.forEach(item => {
+        //     item.goodCount = item.good.length
+        //     item.collectCount = item.collect.length
+        // });
 
-        data.topics.forEach(item => {
-            item.goodCount = item.good.length
-        });
+        // data.topics.forEach(item => {
+        //     item.goodCount = item.good.length
+        // });
 
 
         try {
             await userController.addDistance(req.body.lat, req.body.lng, data.teams)
             await userController.addDistance(req.body.lat, req.body.lng, data.topics)
+            await userController.addCommentCount(data.teams)
+            await userController.addCommentCount(data.topics)
         } catch (err) {
             console.log(err)
         }
         res.send(data)
+    })
+
+    //获取用户基本信息
+    router.get('/userBasicInfo/:id', async (req, res) => {
+        const model = await User.findById(req.params.id, {nickName:1,avatarUrl:1,intro:1,phone:1,wechat:1}).lean()
+        res.send(model)
+    })
+
+    //更新用户基本信息
+    router.put('/userBasicInfo', async (req, res) => {
+        await User.findByIdAndUpdate(req.body.userid, {
+            "$set": req.body.info
+        })
+        res.send({success:true})
     })
 
     //获取我的关注
@@ -91,21 +117,32 @@ module.exports = router => {
         res.send({ success: true, msg: '关注成功' })
     })
 
+    //取消关注
+    router.post('/interestCancel', async (req, res) => {
+        await User.findByIdAndUpdate(req.body.userid, {
+            "$pull": {
+                "interest": req.body.myid
+            }
+        })
+        res.send({ success: true })
+    })
+
     //获取收藏列表
     router.post('/user/collection', async (req, res) => {
         const collections = await Team.find({
             collect: req.body.id
-        }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1 })
+        }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, updatedAt: 1 })
             .populate('owner', 'nickName avatarUrl intro').lean()
 
         await userController.addDistance(req.body.lat, req.body.lng, collections)
+        await userController.addCommentCount(collections)
 
-        const data = collections.map(item => {
-            item.goodCount = item.good.length
-            item.collectCount = item.collect.length
-            return item
-        })
-        res.send(data)
+        // const data = collections.map(item => {
+        //     item.goodCount = item.good.length
+        //     item.collectCount = item.collect.length
+        //     return item
+        // })
+        res.send(collections)
     })
 
     //获取评论信息

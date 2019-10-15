@@ -1,6 +1,6 @@
 const request = require("request")
 const User = require('../models/User')
-
+const Comment = require('../models/Comment')
 
 const use = {}
 
@@ -61,7 +61,13 @@ userController.reverseGeocoder = function (req, res) {
     use.open(opts).then(async val => {
         let r1 = JSON.parse(val)
         let data = {}
-        data.city = r1.result.ad_info.city
+        if (r1.status == 0) {
+            if (r1.result.ad_info) data.city = r1.result.ad_info.city
+        } else {
+            res.status(r1.status).send({
+                msg: r1.message
+            })
+        }
         res.send(data)
 
     }, error => {
@@ -140,5 +146,30 @@ userController.addDistance = function (lat, lng, arr) {
         }
     })
 }
+
+userController.addCommentCount = function (objs) {
+    return new Promise(async function (resolve, reject) {
+
+        try {
+            const cmArr = await Comment.aggregate([
+                // {$match: {}},
+                { $group: { _id: '$to', total: { $sum: 1 } } }
+            ])
+            objs.forEach(item => {
+                const cm = cmArr.filter(i => {
+                    return i._id.toString() == item._id
+                })
+                if (cm[0])
+                    item.commentCount = cm[0].total
+            })
+            resolve()
+
+        } catch (err) {
+
+            reject(err)
+        }
+    })
+}
+
 
 module.exports = userController

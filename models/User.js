@@ -5,6 +5,8 @@ const schema = new mongoose.Schema({
   avatarUrl:{type:String},
   openid:{type:String},
   intro: { type: String },
+  phone: { type: String },
+  wechat: { type: String },
   interest: [
     {type: mongoose.SchemaTypes.ObjectId, ref: 'User'}
   ],
