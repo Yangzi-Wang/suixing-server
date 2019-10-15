@@ -42,13 +42,13 @@ module.exports = router => {
             .lean()
 
         const fans = await User.find({
-            interest: req.body.id
+            follow: req.body.id
         }, { _id: 1 })
 
-        if (data.interest)
-            data.interestCount = data.interest.length
+        if (data.follow)
+            data.followCount = data.follow.length
         else
-            data.interestCount = 0
+            data.followCount = 0
         if (fans)
             data.fansCount = fans.length
         else
@@ -91,9 +91,9 @@ module.exports = router => {
     })
 
     //获取我的关注
-    router.get('/user/interest/:id', async (req, res) => {
-        const data = await User.findById(req.params.id, { interest: 1 })
-            .populate('interest', 'nickName avatarUrl intro')
+    router.get('/user/follow/:id', async (req, res) => {
+        const data = await User.findById(req.params.id, { follow: 1 })
+            .populate('follow', 'nickName avatarUrl intro')
             .lean()
         res.send(data)
     })
@@ -101,27 +101,27 @@ module.exports = router => {
     //获取我的粉丝
     router.get('/user/fans/:id', async (req, res) => {
         const data = await User.find({
-            interest: req.params.id
+            follow: req.params.id
         }, { nickName: 1, avatarUrl: 1, intro: 1 })
             .lean()
         res.send(data)
     })
 
     //关注
-    router.post('/interest', async (req, res) => {
+    router.post('/follow', async (req, res) => {
         await User.findByIdAndUpdate(req.body.userid, {
             "$addToSet": {
-                "interest": req.body.myid
+                "follow": req.body.myid
             }
         })
         res.send({ success: true, msg: '关注成功' })
     })
 
     //取消关注
-    router.post('/interestCancel', async (req, res) => {
+    router.post('/followCancel', async (req, res) => {
         await User.findByIdAndUpdate(req.body.userid, {
             "$pull": {
-                "interest": req.body.myid
+                "follow": req.body.myid
             }
         })
         res.send({ success: true })

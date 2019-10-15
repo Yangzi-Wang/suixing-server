@@ -7,7 +7,7 @@ const schema = new mongoose.Schema({
   intro: { type: String },
   phone: { type: String },
   wechat: { type: String },
-  interest: [
+  follow: [
     {type: mongoose.SchemaTypes.ObjectId, ref: 'User'}
   ],
   topics:[
