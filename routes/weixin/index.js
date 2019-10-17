@@ -256,6 +256,71 @@ module.exports = app => {
     res.send(comments)
   })
 
+  //群聊发言
+  router.post('/team/chat', async (req, res) => {
+    const item = {
+      owner:req.body.userid,
+      content:req.body.content
+    }
+    await Team.findByIdAndUpdate(req.body.teamid, {
+      "$push": {
+        "chat": item,
+      }
+    })
+    res.send({ success: true })
+  })
+
+  //获取群聊内容
+  router.get('/team/chat/:id', async (req, res) => {
+    const data = await Team.findById(req.params.id,{chat:1})
+      .populate('chat.owner', 'nickName avatarUrl')
+      .lean()
+
+    res.send(data)
+  })
+
+  //获取讨论组列表
+  router.get('/team/chatList/:id', async (req, res) => {
+    const data = await Team.find({
+      "$or":  [ 
+        {"owner":req.params.id},
+        {"hasJoin":req.params.id}
+      ]
+    },{postUrl:1,hasJoinNum:1,memberNum:1,title:1}).lean()
+
+    res.send(data)
+  })
+
+  //通过账号返回用户id
+  router.get('/noToUserid/:no', async (req, res) => {
+    const data = await User.find({
+      no:req.params.no
+    },{avatarUrl:1,nickName:1}).lean()
+
+    res.send(data)
+  })
+
+  //更新加入组队的成员
+  router.put('/teamMember', async (req, res) => {
+    await Team.findByIdAndUpdate(req.body.teamid, {
+      hasJoin:req.body.hasJoin
+    })
+    if(req.body.deletedUserid){
+      //删除某个组队的成员,发信息
+    }
+    res.send({ success: true })
+  })
+
+  //结束活动
+  router.put('/team/over', async (req, res) => {
+    await Team.findByIdAndUpdate(req.body.teamid, {
+      status:0
+    })
+    
+    res.send({ success: true })
+  })
+
+  
 
 
   //获取标签
@@ -266,7 +331,7 @@ module.exports = app => {
 
 
   router.get('/test', async (req, res) => {
-    const data = await Team.aggregate([
+    /*const data = await Team.aggregate([
       {
         $geoNear: {
           near: [23.12901, 113.2668],//{ type: "Point", coordinates: [ 0 , 0 ] },
@@ -275,7 +340,7 @@ module.exports = app => {
           distanceMultiplier: 6371
         }
       }
-    ])
+    ])*/
 
     // var options = { near: [23.12901, 113.2668], maxDistance: 5000 };
     // const data2 = await Team.geoSearch({ type : "location" },  options, function(err, res) {
@@ -293,7 +358,9 @@ module.exports = app => {
     //   console.log(res);
     // });
 
-    res.send(data)
+    //(Math.random()*10000000).toString(16).substr(0,4)+'-'+(new Date()).getTime()+'-'+Math.random().toString().substr(2,5)
+    const no = (Math.random()*10000000).toString(16).substr(0,4)+Math.random().toString().substr(2,5)
+    res.send(no)
   })
 
   //搜索

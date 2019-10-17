@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
-  status: { type: Number ,default: 0 },
+  status: { type: Number ,default: 1 },
   title: { type: String },
   content: { type: String },
   memberNum: { type: String },
@@ -24,6 +24,12 @@ const schema = new mongoose.Schema({
   collect: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   labels: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Label' }],
   owner: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
+  chat:[
+    {
+      owner:{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
+      content:{ type: String }
+    }
+  ],
 }, {
   timestamps: true
 })

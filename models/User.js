@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
+  no: { type: String, unique: true },
   nickName: { type: String },
   avatarUrl:{type:String},
   openid:{type:String},

@@ -78,7 +78,7 @@ module.exports = router => {
 
     //获取用户基本信息
     router.get('/userBasicInfo/:id', async (req, res) => {
-        const model = await User.findById(req.params.id, {nickName:1,avatarUrl:1,intro:1,phone:1,wechat:1}).lean()
+        const model = await User.findById(req.params.id, {no:1,nickName:1,avatarUrl:1,intro:1,phone:1,wechat:1}).lean()
         res.send(model)
     })
 
