@@ -142,7 +142,7 @@ module.exports = app => {
       .populate('labels')
       .lean()
 
-    // await userController.addDistance(req.params.lat,req.params.lng,teams)
+    await userController.addDistance(req.body.lat,req.body.lng,[team])
 
     const comments = await Comment.find({
       to: req.params.id
@@ -162,7 +162,7 @@ module.exports = app => {
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
 
-    // await userController.addDistance(req.params.lat,req.params.lng,topics)
+    await userController.addDistance(req.body.lat,req.body.lng,[topic])
 
     const comments = await Comment.find({
       to: req.params.id
