@@ -5,6 +5,8 @@ module.exports = router => {
     const Team = mongoose.model('Team')
     const User = mongoose.model('User')
     const Comment = mongoose.model('Comment')
+    const Forward = mongoose.model('Forward')
+
 
     router.post("/openid", userController.login)
     //获取城市信息
@@ -30,12 +32,12 @@ module.exports = router => {
             // .populate('topics', 'content images locationName location good')
             .populate({
                 path: 'topics',
-                select: 'content images locationName location good owner updatedAt',
+                select: 'content images locationName location good forwardCount owner updatedAt',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             .populate({
                 path: 'teams',
-                select: 'postUrl locationName good collect location owner updatedAt',
+                select: 'postUrl locationName good collect forwardCount location owner updatedAt',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             //fail // .populate('teams', 'postUrl locationName good collect location owner.nickName owner.avatarUrl')
@@ -64,21 +66,50 @@ module.exports = router => {
         //     item.goodCount = item.good.length
         // });
 
+        //转发
+        let forwards_topic = await Forward.find({
+            owner: req.body.id,
+            ref: 'Topic'
+        }).populate({
+            path: 'from',
+            model: 'Topic',
+            populate: { path: 'owner', select: 'nickName avatarUrl' }
+        }).populate('owner','nickName avatarUrl').lean()
+
+        let arr = []
+        forwards_topic.forEach((item) => {
+            arr.push(item.from)
+        })
+        // console.log(forwards_topic[1].from.distance)
+
 
         try {
-            await userController.addDistance(req.body.lat, req.body.lng, data.teams)
-            await userController.addDistance(req.body.lat, req.body.lng, data.topics)
-            await userController.addCommentCount(data.teams)
-            await userController.addCommentCount(data.topics)
+            let total = data.teams.concat(data.topics).concat(arr)
+            let p = [
+                userController.addDistance(req.body.lat, req.body.lng, total),
+                userController.addCommentCount(total),
+            ]
+            await Promise.all(p)
+            
         } catch (err) {
             console.log(err)
         }
+
+        //排序
+        data.topics.push.apply( data.topics, forwards_topic ); 
+      data.topics.sort(function(a,b){
+        let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
+        let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
+        return date1>date2?-1:1
+      })
+
+
         res.send(data)
     })
 
     //获取用户基本信息
     router.get('/userBasicInfo/:id', async (req, res) => {
-        const model = await User.findById(req.params.id, {no:1,nickName:1,avatarUrl:1,intro:1,phone:1,wechat:1}).lean()
+        const model = await User.findById(req.params.id, { no: 1, nickName: 1, avatarUrl: 1, intro: 1, phone: 1, wechat: 1 }).lean()
         res.send(model)
     })
 
@@ -87,7 +118,7 @@ module.exports = router => {
         await User.findByIdAndUpdate(req.body.userid, {
             "$set": req.body.info
         })
-        res.send({success:true})
+        res.send({ success: true })
     })
 
     //获取我的关注

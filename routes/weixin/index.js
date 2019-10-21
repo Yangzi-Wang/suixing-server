@@ -6,6 +6,8 @@ module.exports = app => {
   const User = mongoose.model('User')
   const Comment = mongoose.model('Comment')
   const Label = mongoose.model('Label')
+  const Forward = mongoose.model('Forward')
+
   const userController = require('../../plugins/wechat')
 
 
@@ -142,7 +144,7 @@ module.exports = app => {
       .populate('labels')
       .lean()
 
-    await userController.addDistance(req.query.lat,req.query.lng,[team])
+    await userController.addDistance(req.query.lat, req.query.lng, [team])
 
     const comments = await Comment.find({
       to: req.params.id
@@ -162,7 +164,7 @@ module.exports = app => {
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
 
-    await userController.addDistance(req.query.lat,req.query.lng,[topic])
+    await userController.addDistance(req.query.lat, req.query.lng, [topic])
 
     const comments = await Comment.find({
       to: req.params.id
@@ -172,6 +174,31 @@ module.exports = app => {
     topic.commentCount = comments.length
 
     res.send({ topic: topic, comments: comments })
+  })
+
+
+  //转发
+  router.post('/forward', async (req, res) => {
+    const model = await Forward.create(req.body)
+    req.body.ref == 'Topic' && await Topic.findByIdAndUpdate(req.body.from, {
+      '$inc': { 'forwardCount': 1 }
+    })
+    req.body.ref == 'Team' && await Team.findByIdAndUpdate(req.body.from, {
+      '$inc': { 'forwardCount': 1 }
+    })
+    res.send({ success: true })
+  })
+
+  //删除转发
+  router.delete('/forward/:id', async (req, res) => {
+    const model = await Forward.findByIdAndDelete(req.params.id)
+    model.ref == 'Topic' && await Topic.findByIdAndUpdate(model.from, {
+      '$inc': { 'forwardCount': -1 }
+    })
+    model.ref == 'Team' && await Team.findByIdAndUpdate(model.from, {
+      '$inc': { 'forwardCount': -1 }
+    })
+    res.send({ success: true })
   })
 
 
@@ -259,8 +286,8 @@ module.exports = app => {
   //群聊发言
   router.post('/team/chat', async (req, res) => {
     const item = {
-      owner:req.body.userid,
-      content:req.body.content
+      owner: req.body.userid,
+      content: req.body.content
     }
     await Team.findByIdAndUpdate(req.body.teamid, {
       "$push": {
@@ -272,7 +299,7 @@ module.exports = app => {
 
   //获取群聊内容
   router.get('/team/chat/:id', async (req, res) => {
-    const data = await Team.findById(req.params.id,{chat:1})
+    const data = await Team.findById(req.params.id, { chat: 1 })
       .populate('chat.owner', 'nickName avatarUrl')
       .lean()
 
@@ -282,11 +309,11 @@ module.exports = app => {
   //获取讨论组列表
   router.get('/team/chatList/:id', async (req, res) => {
     const data = await Team.find({
-      "$or":  [ 
-        {"owner":req.params.id},
-        {"hasJoin":req.params.id}
+      "$or": [
+        { "owner": req.params.id },
+        { "hasJoin": req.params.id }
       ]
-    },{postUrl:1,hasJoinNum:1,memberNum:1,title:1}).lean()
+    }, { postUrl: 1, hasJoinNum: 1, memberNum: 1, title: 1 }).lean()
 
     res.send(data)
   })
@@ -294,8 +321,8 @@ module.exports = app => {
   //通过账号返回用户id
   router.get('/noToUserid/:no', async (req, res) => {
     const data = await User.find({
-      no:req.params.no
-    },{avatarUrl:1,nickName:1}).lean()
+      no: req.params.no
+    }, { avatarUrl: 1, nickName: 1 }).lean()
 
     res.send(data)
   })
@@ -303,9 +330,9 @@ module.exports = app => {
   //更新加入组队的成员
   router.put('/teamMember', async (req, res) => {
     await Team.findByIdAndUpdate(req.body.teamid, {
-      hasJoin:req.body.hasJoin
+      hasJoin: req.body.hasJoin
     })
-    if(req.body.deletedUserid){
+    if (req.body.deletedUserid) {
       //删除某个组队的成员,发信息
     }
     res.send({ success: true })
@@ -314,13 +341,13 @@ module.exports = app => {
   //结束活动
   router.put('/team/over', async (req, res) => {
     await Team.findByIdAndUpdate(req.body.teamid, {
-      status:0
+      status: 0
     })
-    
+
     res.send({ success: true })
   })
 
-  
+
 
 
   //获取标签
@@ -359,7 +386,7 @@ module.exports = app => {
     // });
 
     //(Math.random()*10000000).toString(16).substr(0,4)+'-'+(new Date()).getTime()+'-'+Math.random().toString().substr(2,5)
-    const no = (Math.random()*10000000).toString(16).substr(0,4)+Math.random().toString().substr(2,5)
+    const no = (Math.random() * 10000000).toString(16).substr(0, 4) + Math.random().toString().substr(2, 5)
     res.send(no)
   })
 
@@ -368,7 +395,8 @@ module.exports = app => {
     const teams = await Team.find({
       "$or": [
         { 'title': eval("/" + req.body.key + "/i") },
-        { 'content': eval("/" + req.body.key + "/i") }
+        { 'content': eval("/" + req.body.key + "/i") },
+        // { 'labels': {'$all': req.body.key} }
       ]
     }).populate('owner', 'nickName avatarUrl intro').lean()
 

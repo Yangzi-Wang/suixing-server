@@ -134,9 +134,11 @@ userController.addDistance = function (lat, lng, arr) {
                     // console.log(distanceArr[index].distance)
                     // Object.assign(item, {distance:distanceArr[index].distance})
                     item.distance = distanceArr[index].distance
+                    // console.log(item.distance)
                 })
-                resolve()
-                // console.log(arr)
+                // console.log(arr[0].distance)
+
+                resolve()     //await后返回（）里面的内容
             } else { resolve() }
         } catch (err) {
             console.log('获取测距数据失败', err);

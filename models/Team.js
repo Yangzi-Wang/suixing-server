@@ -21,6 +21,8 @@ const schema = new mongoose.Schema({
   require: { type: String },
   postUrl: { type: String },
   good: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
+  // forward: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Forward' }],
+  forwardCount: { type: Number ,default: 0 },
   collect: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   labels: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Label' }],
   owner: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },

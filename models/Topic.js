@@ -8,6 +8,8 @@ const schema = new mongoose.Schema({
   locationName: { type: String },
   labels: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Label' }],
   good: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
+  // forward: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Forward' }],
+  forwardCount: { type: Number ,default: 0 },
   owner: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
 }, {
   timestamps: true
