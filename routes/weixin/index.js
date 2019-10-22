@@ -313,7 +313,9 @@ module.exports = app => {
         { "owner": req.params.id },
         { "hasJoin": req.params.id }
       ]
-    }, { postUrl: 1, hasJoinNum: 1, memberNum: 1, title: 1 }).lean()
+    }, { postUrl: 1, hasJoinNum: 1, memberNum: 1, title: 1, owner: 1 })
+    .populate('owner', 'nickName avatarUrl')
+    .lean()
 
     res.send(data)
   })
