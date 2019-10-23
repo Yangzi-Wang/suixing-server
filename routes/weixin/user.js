@@ -40,6 +40,11 @@ module.exports = router => {
                 select: 'postUrl locationName good collect forwardCount location owner updatedAt',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
+            .populate({
+                path: 'joinedTeams',
+                select: 'postUrl locationName good collect forwardCount location owner updatedAt',
+                populate: { path: 'owner', select: 'nickName avatarUrl' }
+            })
             //fail // .populate('teams', 'postUrl locationName good collect location owner.nickName owner.avatarUrl')
             .lean()
 
@@ -74,34 +79,53 @@ module.exports = router => {
             path: 'from',
             model: 'Topic',
             populate: { path: 'owner', select: 'nickName avatarUrl' }
-        }).populate('owner','nickName avatarUrl').lean()
+        }).populate('owner', 'nickName avatarUrl').lean()
+
+        let forwards_team = await Forward.find({
+            owner: req.body.id,
+            ref: 'Team'
+        }).populate({
+            path: 'from',
+            model: 'Team',
+            populate: { path: 'owner', select: 'nickName avatarUrl' }
+        }).populate('owner', 'nickName avatarUrl').lean()
 
         let arr = []
         forwards_topic.forEach((item) => {
+            arr.push(item.from)
+        })
+        forwards_team.forEach((item) => {
             arr.push(item.from)
         })
         // console.log(forwards_topic[1].from.distance)
 
 
         try {
-            let total = data.teams.concat(data.topics).concat(arr)
+            let total = data.teams.concat(data.topics).concat(data.joinedTeams).concat(arr)
             let p = [
                 userController.addDistance(req.body.lat, req.body.lng, total),
                 userController.addCommentCount(total),
             ]
             await Promise.all(p)
-            
+
         } catch (err) {
             console.log(err)
         }
 
         //排序
-        data.topics.push.apply( data.topics, forwards_topic ); 
-      data.topics.sort(function(a,b){
-        let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
-        let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
-        return date1>date2?-1:1
-      })
+        data.topics.push.apply(data.topics, forwards_topic);
+        data.topics.sort(function (a, b) {
+            let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
+            let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
+            return date1 > date2 ? -1 : 1
+        })
+
+        data.teams.push.apply(data.teams, forwards_team);
+        data.teams.sort(function (a, b) {
+            let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
+            let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
+            return date1 > date2 ? -1 : 1
+        })
 
 
         res.send(data)
@@ -140,9 +164,9 @@ module.exports = router => {
 
     //关注
     router.post('/follow', async (req, res) => {
-        await User.findByIdAndUpdate(req.body.userid, {
+        await User.findByIdAndUpdate(req.body.myid, {
             "$addToSet": {
-                "follow": req.body.myid
+                "follow": req.body.userid
             }
         })
         res.send({ success: true, msg: '关注成功' })
@@ -150,9 +174,9 @@ module.exports = router => {
 
     //取消关注
     router.post('/followCancel', async (req, res) => {
-        await User.findByIdAndUpdate(req.body.userid, {
+        await User.findByIdAndUpdate(req.body.myid, {
             "$pull": {
-                "follow": req.body.myid
+                "follow": req.body.userid
             }
         })
         res.send({ success: true })

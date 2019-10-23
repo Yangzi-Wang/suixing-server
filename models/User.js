@@ -17,6 +17,9 @@ const schema = new mongoose.Schema({
   teams:[
     {type: mongoose.SchemaTypes.ObjectId, ref: 'Team'}
   ],
+  joinedTeams:[
+    {type: mongoose.SchemaTypes.ObjectId, ref: 'Team'}
+  ],
   // collects:[
   //   {type: mongoose.SchemaTypes.ObjectId, ref: 'Team'}
   // ],

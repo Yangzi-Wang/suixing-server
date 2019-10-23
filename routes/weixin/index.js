@@ -7,6 +7,7 @@ module.exports = app => {
   const Comment = mongoose.model('Comment')
   const Label = mongoose.model('Label')
   const Forward = mongoose.model('Forward')
+  const Message = mongoose.model('Message')
 
   const userController = require('../../plugins/wechat')
 
@@ -314,7 +315,7 @@ module.exports = app => {
         { "hasJoin": req.params.id }
       ]
     }, { postUrl: 1, hasJoinNum: 1, memberNum: 1, title: 1, owner: 1 })
-    .populate('owner', 'nickName avatarUrl')
+    .populate('owner', 'nickName avatarUrl intro')
     .lean()
 
     res.send(data)
@@ -332,10 +333,15 @@ module.exports = app => {
   //更新加入组队的成员
   router.put('/teamMember', async (req, res) => {
     await Team.findByIdAndUpdate(req.body.teamid, {
-      hasJoin: req.body.hasJoin
+      hasJoin: req.body.hasJoin,
+      hasJoinNum: req.body.hasJoin.length+1
     })
     if (req.body.deletedUserid) {
       //删除某个组队的成员,发信息
+      await Message.findOneAndUpdate({
+        participant: req.body.deletedUserid,
+        team: req.body.teamid
+      }, { status: 2 })
     }
     res.send({ success: true })
   })
