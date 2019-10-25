@@ -26,13 +26,13 @@ const schema = new mongoose.Schema({
   collect: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   labels: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Label' }],
   owner: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
-  chat:[
-    {
-      _id: { type: mongoose.SchemaTypes.ObjectId },
-      owner:{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
-      content:{ type: String }
-    }
-  ],
+  // chat:[
+  //   {
+  //     _id: { type: mongoose.SchemaTypes.ObjectId },
+  //     owner:{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
+  //     content:{ type: String }
+  //   }
+  // ],
 }, {
   timestamps: true
 })

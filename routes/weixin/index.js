@@ -298,8 +298,8 @@ module.exports = app => {
     //     "chat": item,
     //   }
     // })
-    await Chat.create(item)
-    res.send({ success: true })
+    const model = await Chat.create(item)
+    res.send(model)
   })
 
   //获取群聊内容
