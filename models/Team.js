@@ -51,5 +51,5 @@ schema.virtual('newsList', {
   ref: 'Article'
 })
 */
-// schema.index({location: '2d'});
+schema.index({location: '2d'});
 module.exports = mongoose.model('Team', schema)
