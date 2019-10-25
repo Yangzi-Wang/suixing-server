@@ -8,6 +8,8 @@ module.exports = app => {
   const Label = mongoose.model('Label')
   const Forward = mongoose.model('Forward')
   const Message = mongoose.model('Message')
+  const Chat = mongoose.model('Chat')
+
 
   const userController = require('../../plugins/wechat')
 
@@ -287,22 +289,29 @@ module.exports = app => {
   //群聊发言
   router.post('/team/chat', async (req, res) => {
     const item = {
-      _id: new mongoose.Types.ObjectId(),
+      team: req.body.teamid,
       content: req.body.content,
       owner: req.body.userid
     }
-    await Team.findByIdAndUpdate(req.body.teamid, {
-      "$push": {
-        "chat": item,
-      }
-    })
+    // await Team.findByIdAndUpdate(req.body.teamid, {
+    //   "$push": {
+    //     "chat": item,
+    //   }
+    // })
+    await Chat.create(item)
     res.send({ success: true })
   })
 
   //获取群聊内容
   router.get('/team/chat/:id', async (req, res) => {
-    const data = await Team.findById(req.params.id, { chat: 1 })
-      .populate('chat.owner', 'nickName avatarUrl')
+    // const data = await Team.findById(req.params.id, { chat: 1 })
+    //   .populate('chat.owner', 'nickName avatarUrl')
+    //   .lean()
+
+    const data = await Chat.find({
+      team: req.params.id
+    }, { team: 0 })
+      .populate('owner', 'nickName avatarUrl')
       .lean()
 
     res.send(data)
