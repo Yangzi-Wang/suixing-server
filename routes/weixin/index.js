@@ -315,15 +315,15 @@ module.exports = app => {
         { "hasJoin": req.params.id }
       ]
     }, { postUrl: 1, hasJoinNum: 1, memberNum: 1, title: 1, owner: 1 })
-    .populate('owner', 'nickName avatarUrl intro')
-    .lean()
+      .populate('owner', 'nickName avatarUrl intro')
+      .lean()
 
     res.send(data)
   })
 
   //通过账号返回用户id
   router.get('/noToUserid/:no', async (req, res) => {
-    const data = await User.find({
+    const data = await User.findOne({
       no: req.params.no
     }, { avatarUrl: 1, nickName: 1 }).lean()
 
@@ -332,18 +332,55 @@ module.exports = app => {
 
   //更新加入组队的成员
   router.put('/teamMember', async (req, res) => {
-    await Team.findByIdAndUpdate(req.body.teamid, {
-      hasJoin: req.body.hasJoin,
-      hasJoinNum: req.body.hasJoin.length+1
+    const model = await Team.findByIdAndUpdate(req.body.teamid, {
+      "$addToSet": {
+        "hasJoin": req.body.userid
+      },
+      '$inc': { 'hasJoinNum': 1 }
+    }, {
+      "new": true
     })
-    if (req.body.deletedUserid) {
-      //删除某个组队的成员,发信息
-      await Message.findOneAndUpdate({
-        participant: req.body.deletedUserid,
-        team: req.body.teamid
-      }, { status: 2 })
-    }
-    res.send({ success: true })
+    const data = await Team.populate(model, { path: 'hasJoin', model: 'User', select: 'nickName avatarUrl intro' })
+    // console.log(data)
+
+    Message.create({
+      team: req.body.teamid,
+      owner: model.owner,
+      participant: req.body.userid,
+      status: 4
+    })
+
+    res.send(data.hasJoin)
+  })
+
+  //删除某个组队的成员
+  router.delete('/teamMember', async (req, res) => {
+    const model = await Team.findByIdAndUpdate(req.body.teamid, {
+      "$pull": {
+        "hasJoin": req.body.userid
+      },
+      '$inc': { 'hasJoinNum': -1 }
+    }, {
+      "new": true
+    })
+    const data = await Team.populate(model, { path: 'hasJoin', model: 'User', select: 'nickName avatarUrl intro' })
+
+    //删除某个组队的成员,发信息
+    Message.create({
+      team: req.body.teamid,
+      owner: model.owner,
+      participant: req.body.userid,
+      status: 2
+    })
+
+    res.send(data.hasJoin)
+  })
+
+
+  //获取加入组队的成员
+  router.get('/teamMember/:id', async (req, res) => {
+    const model = await Team.findById(req.params.id, { hasJoin: 1 }).populate('hasJoin', 'nickName avatarUrl intro')
+    res.send(model.hasJoin)
   })
 
   //结束活动

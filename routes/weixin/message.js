@@ -8,7 +8,7 @@ module.exports = router => {
 
 
 
-  //0申请、1同意已加入、2加入后被退出、3主动退出
+  //0申请、1同意已加入、2加入后被退出、3主动退出、4邀请
   //申请加入组队
   router.post('/message', async (req, res) => {
     await Message.create(req.body)
@@ -40,6 +40,7 @@ module.exports = router => {
       "$or": [
         { participant: req.params.id, status: 1 },
         { participant: req.params.id, status: 2 },
+        { participant: req.params.id, status: 4 },
         { owner: req.params.id, status: 0 }
       ]
     })
