@@ -287,8 +287,9 @@ module.exports = app => {
   //群聊发言
   router.post('/team/chat', async (req, res) => {
     const item = {
-      owner: req.body.userid,
-      content: req.body.content
+      _id: new mongoose.Types.ObjectId(),
+      content: req.body.content,
+      owner: req.body.userid
     }
     await Team.findByIdAndUpdate(req.body.teamid, {
       "$push": {
