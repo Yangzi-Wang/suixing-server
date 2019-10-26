@@ -288,20 +288,15 @@ module.exports = app => {
   })
 
   //群聊发言
-  router.post('/team/chat', async (req, res) => {
-    const item = {
+  router.post('/teamSpeak', async (req, res) => {
+    const model = await Chat.create({
       team: req.body.teamid,
       content: req.body.content,
       owner: req.body.userid
-    }
-    // await Team.findByIdAndUpdate(req.body.teamid, {
-    //   "$push": {
-    //     "chat": item,
-    //   }
-    // })
-    const model = await Chat.create(item)
+    })
     res.send(model)
   })
+  
 
   //获取群聊内容
   router.get('/team/chat/:id', async (req, res) => {
