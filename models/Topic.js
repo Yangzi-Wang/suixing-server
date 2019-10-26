@@ -19,5 +19,5 @@ const schema = new mongoose.Schema({
 //   console.log(this.good.length)
 //   return this.good.length
 // });
-
+schema.index({location: '2d'});
 module.exports = mongoose.model('Topic', schema)

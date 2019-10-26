@@ -50,6 +50,7 @@ module.exports = app => {
   router.post('/team', async (req, res) => {
     let data = req.body
     data.city = await userController.getCity(data.location[0], data.location[1])               //location必须有
+    data.no = (Math.random()*10000000).toString(16).substr(0,5)+Math.random().toString().substr(2,5)
     const model = await Team.create(data).catch(err => console.log(err))
     await User.findByIdAndUpdate(req.body.owner, {
       "$addToSet": {
