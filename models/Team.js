@@ -10,10 +10,6 @@ const schema = new mongoose.Schema({
   location: { type: [Number], index:'2d' },
   city: { type: String },
   distance: { type: Number ,default: 0 },
-  // loc: {
-  //   type: {type: String},
-  //   coordinates: {type: [Number]}
-  // },
   locationName: { type: String },
   date: { type: String },
   time: { type: String },
@@ -26,30 +22,9 @@ const schema = new mongoose.Schema({
   collect: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   labels: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Label' }],
   owner: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
-  // chat:[
-  //   {
-  //     _id: { type: mongoose.SchemaTypes.ObjectId },
-  //     owner:{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
-  //     content:{ type: String }
-  //   }
-  // ],
 }, {
   timestamps: true
 })
-/*
-schema.virtual('children', {
-  localField: '_id',
-  foreignField: 'parent',
-  justOne: false,
-  ref: 'Category'
-})
 
-schema.virtual('newsList', {
-  localField: '_id',
-  foreignField: 'categories',
-  justOne: false,
-  ref: 'Article'
-})
-*/
 schema.index({location: '2d'});
 module.exports = mongoose.model('Team', schema)
