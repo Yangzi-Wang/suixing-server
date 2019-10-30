@@ -50,7 +50,7 @@ module.exports = app => {
   router.post('/team', async (req, res) => {
     let data = req.body
     data.city = await userController.getCity(data.location[0], data.location[1])               //location必须有
-    data.no = (Math.random()*10000000).toString(16).substr(0,5)+Math.random().toString().substr(2,5)
+    data.no = (Math.random() * 10000000).toString(16).substr(0, 5) + Math.random().toString().substr(2, 5)
     const model = await Team.create(data).catch(err => console.log(err))
     await User.findByIdAndUpdate(req.body.owner, {
       "$addToSet": {
@@ -294,9 +294,10 @@ module.exports = app => {
       content: req.body.content,
       owner: req.body.userid
     })
-    res.send(model)
+    const data = await Chat.populate(model, { path: 'owner', model: 'User', select: 'nickName avatarUrl' })
+    res.send(data)
   })
-  
+
 
   //获取群聊内容
   router.get('/team/chat/:id', async (req, res) => {
@@ -443,23 +444,37 @@ module.exports = app => {
 
   //搜索
   router.post('/search', async (req, res) => {
+    // const checkForHexRegExp = new RegExp('^[0-9a-fA-F]{10}$')
+    // let teams,topics;
+    // if (req.body.key.length == 10 && checkForHexRegExp.test(req.body.key)) {
+    //   teams = await Team.find({
+    //     no:req.body.key
+    //   }).populate('owner', 'nickName avatarUrl intro').lean()
+    // }else{}
     const teams = await Team.find({
       "$or": [
+        { 'no': req.body.key },
         { 'title': eval("/" + req.body.key + "/i") },
         { 'content': eval("/" + req.body.key + "/i") },
-        // { 'labels': {'$all': req.body.key} }
+        // { 'labels':  req.body.key }
       ]
     }).populate('owner', 'nickName avatarUrl intro').lean()
-
-    await userController.addDistance(req.body.lat, req.body.lng, teams)
-    await userController.addCommentCount(teams)
 
     const topics = await Topic.find({
       'content': eval("/" + req.body.key + "/i")
     }).populate('owner', 'nickName avatarUrl intro').lean()
 
-    await userController.addDistance(req.body.lat, req.body.lng, topics)
-    await userController.addCommentCount(topics)
+    try {
+      let total = teams.concat(topics)
+      let p = [
+        userController.addDistance(req.body.lat, req.body.lng, total),
+        userController.addCommentCount(total)
+      ]
+      await Promise.all(p)
+
+    } catch (err) {
+      console.log(err)
+    }
 
     res.send({ teams: teams, topics: topics })
   })

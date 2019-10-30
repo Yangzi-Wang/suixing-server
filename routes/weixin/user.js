@@ -37,12 +37,12 @@ module.exports = router => {
             })
             .populate({
                 path: 'teams',
-                select: 'postUrl locationName good collect forwardCount location owner updatedAt',
+                select: 'postUrl locationName good collect forwardCount location owner updatedAt status',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             .populate({
                 path: 'joinedTeams',
-                select: 'postUrl locationName good collect forwardCount location owner updatedAt',
+                select: 'postUrl locationName good collect forwardCount location owner updatedAt status',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             //fail // .populate('teams', 'postUrl locationName good collect location owner.nickName owner.avatarUrl')

@@ -46,6 +46,7 @@ module.exports = router => {
     })
       .populate('owner', 'nickName avatarUrl')
       .populate('participant', 'nickName avatarUrl')
+      .populate('team', 'title')
       .lean()
 
     // 找出我的话题和组队的id
