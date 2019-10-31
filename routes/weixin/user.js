@@ -101,7 +101,7 @@ module.exports = router => {
 
 
         try {
-            let total = data.teams.concat(data.topics).concat(arr).concat(data.joinedTeams)
+            let total = data.teams.concat(data.topics).concat(arr)//.concat(data.joinedTeams)
             let p = [
                 userController.addDistance(req.body.lat, req.body.lng, total),
                 userController.addCommentCount(total)

@@ -73,6 +73,25 @@ module.exports = router => {
       let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
       return date1 > date2 ? -1 : 1
     })
-    res.send(data)
+
+    //未读消息计数
+    const user = await User.findById(req.params.id,{latestReadMsg:1})
+    
+    let index = 0;
+    for(let i = 0;i<data.length;i++){
+      if(data[i]._id==user.latestReadMsg) {
+        index=i
+      }
+    }
+    // console.log(user)
+    res.send({msg:data,unreadMsgCount:index})
+  })
+
+  //记录已读消息
+  router.post('/readMessages', async (req, res) => {
+    await User.findByIdAndUpdate(req.body.userid, {
+      latestReadMsg: req.body.msgid
+    })
+    res.send({ success: true })
   })
 }

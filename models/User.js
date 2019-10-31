@@ -26,10 +26,11 @@ const schema = new mongoose.Schema({
   // goods:[
   //   {type: mongoose.SchemaTypes.ObjectId, ref: 'Topic'}
   // ],
-  location: {type: [Number], index: '2d'}
+  location: {type: [Number], index: '2d'},
   // goods:[
   //   {type: mongoose.SchemaTypes.ObjectId, ref: ''}
   // ],
+  latestReadMsg:{type: mongoose.SchemaTypes.ObjectId}
 })
 /*
 schema.virtual('children', {
