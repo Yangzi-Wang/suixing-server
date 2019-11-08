@@ -79,11 +79,11 @@ module.exports = router => {
     
     let index = 0;
     for(let i = 0;i<data.length;i++){
-      if(data[i]._id==user.latestReadMsg) {
+      if(data[i]._id==user.latestReadMsg.toString()) {
         index=i
       }
     }
-    // console.log(user)
+    // console.log(user.latestReadMsg)
     res.send({msg:data,unreadMsgCount:index})
   })
 
