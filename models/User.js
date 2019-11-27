@@ -30,7 +30,7 @@ const schema = new mongoose.Schema({
   // goods:[
   //   {type: mongoose.SchemaTypes.ObjectId, ref: ''}
   // ],
-  latestReadMsg:{type: mongoose.SchemaTypes.ObjectId}
+  latestReadMsg:{type: mongoose.SchemaTypes.ObjectId,default:''}
 })
 /*
 schema.virtual('children', {

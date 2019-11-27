@@ -451,17 +451,27 @@ module.exports = app => {
     //     no:req.body.key
     //   }).populate('owner', 'nickName avatarUrl intro').lean()
     // }else{}
+    
+    let searchKey = req.body.key
+    const labels = await Label.find()
+    const labelNameArr = labels.map(i=>i.name)
+    const index = labelNameArr.indexOf(req.body.key)
+    if(index!=-1){
+      searchKey = labels[index]._id
+    }
+
+
     const teams = await Team.find({
       "$or": [
-        { 'no': req.body.key },
-        { 'title': eval("/" + req.body.key + "/i") },
-        { 'content': eval("/" + req.body.key + "/i") },
-        // { 'labels':  req.body.key }
+        { 'no': searchKey },
+        { 'title': eval("/" + searchKey + "/i") },
+        { 'content': eval("/" + searchKey + "/i") },
+        { 'labels':  searchKey }
       ]
     }).populate('owner', 'nickName avatarUrl intro').lean()
 
     const topics = await Topic.find({
-      'content': eval("/" + req.body.key + "/i")
+      'content': eval("/" + searchKey + "/i")
     }).populate('owner', 'nickName avatarUrl intro').lean()
 
     try {

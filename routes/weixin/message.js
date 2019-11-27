@@ -78,8 +78,9 @@ module.exports = router => {
     const user = await User.findById(req.params.id,{latestReadMsg:1})
     
     let index = 0;
+    const latestRM = user.latestReadMsg?user.latestReadMsg.toString():''
     for(let i = 0;i<data.length;i++){
-      if(data[i]._id==user.latestReadMsg.toString()) {
+      if(data[i]._id==latestRM) {
         index=i
       }
     }
