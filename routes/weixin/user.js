@@ -32,17 +32,17 @@ module.exports = router => {
             // .populate('topics', 'content images locationName location good')
             .populate({
                 path: 'topics',
-                select: 'content images locationName location good forwardCount owner updatedAt',
+                select: 'content images locationName location good forwardCount owner createdAt',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             .populate({
                 path: 'teams',
-                select: 'postUrl locationName good collect forwardCount location owner updatedAt status',
+                select: 'postUrl locationName good collect forwardCount location owner createdAt status',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             .populate({
                 path: 'joinedTeams',
-                select: 'postUrl locationName good collect forwardCount location owner updatedAt status',
+                select: 'postUrl locationName good collect forwardCount location owner createdAt status',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             //fail // .populate('teams', 'postUrl locationName good collect location owner.nickName owner.avatarUrl')
@@ -115,15 +115,15 @@ module.exports = router => {
         //排序
         data.topics.push.apply(data.topics, forwards_topic);
         data.topics.sort(function (a, b) {
-            let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
-            let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
+            let date1 = a['createdAt'] || '2019-10-18T17:51:17.846Z'
+            let date2 = b['createdAt'] || '2019-10-18T17:51:17.846Z'
             return date1 > date2 ? -1 : 1
         })
 
         data.teams.push.apply(data.teams, forwards_team);
         data.teams.sort(function (a, b) {
-            let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
-            let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
+            let date1 = a['createdAt'] || '2019-10-18T17:51:17.846Z'
+            let date2 = b['createdAt'] || '2019-10-18T17:51:17.846Z'
             return date1 > date2 ? -1 : 1
         })
 
@@ -186,7 +186,7 @@ module.exports = router => {
     router.post('/user/collection', async (req, res) => {
         const collections = await Team.find({
             collect: req.body.id
-        }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, updatedAt: 1 })
+        }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1 })
             .populate('owner', 'nickName avatarUrl intro').lean()
 
         await userController.addDistance(req.body.lat, req.body.lng, collections)
