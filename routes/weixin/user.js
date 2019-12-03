@@ -6,6 +6,7 @@ module.exports = router => {
     const User = mongoose.model('User')
     const Comment = mongoose.model('Comment')
     const Forward = mongoose.model('Forward')
+    const Message = mongoose.model('Message')
 
 
     router.post("/openid", userController.login)
@@ -26,11 +27,11 @@ module.exports = router => {
         res.send(model)
     })
 
-    
+
 
     //获取用户信息、话题、组队
     router.post('/user', async (req, res) => {
-        const data = await User.findById(req.body.id, { openid: 0 })
+        let data = await User.findById(req.body.id, { openid: 0 })
             // .populate('topics', 'content images locationName location good')
             .populate({
                 path: 'topics',
@@ -50,14 +51,6 @@ module.exports = router => {
             //fail // .populate('teams', 'postUrl locationName good collect location owner.nickName owner.avatarUrl')
             .lean()
 
-            //是否有未读消息
-    // let index = 0;
-    // const latestRM = data.latestReadMsg?data.latestReadMsg.toString():''
-    // for(let i = 0;i<data.length;i++){
-    //   if(data[i]._id==latestRM) {
-    //     index=i
-    //   }
-    // }
 
         const fans = await User.find({
             follow: req.body.id
@@ -137,6 +130,30 @@ module.exports = router => {
             let date2 = b['createdAt'] || '2019-10-18T17:51:17.846Z'
             return date1 > date2 ? -1 : 1
         })
+
+
+        //未读消息
+        const messages = await Message.find({
+            "$or": [
+                { participant: data._id, status: 1 },
+                { participant: data._id, status: 2 },
+                { participant: data._id, status: 4 },
+                { owner: data._id, status: 0 }
+            ]
+        }).lean()
+
+        messages != '' && messages.sort(function (a, b) {
+            let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
+            let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
+            return date1 > date2 ? -1 : 1
+        })
+
+        let unRead = false
+        const latestRM = data.latestReadMsg ? data.latestReadMsg.toString() : ''
+        if (messages != '' && messages[0]._id != latestRM) {
+            unRead = true
+        }
+        data.unRead = unRead
 
 
         res.send(data)
