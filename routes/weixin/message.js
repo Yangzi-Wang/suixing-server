@@ -50,24 +50,24 @@ module.exports = router => {
       .lean()
 
     // 找出我的话题和组队的id
-    const teams = await Team.find({
-      owner: req.params.id
-    }, { _id: 1 })
-    const teamIdArr = teams.map(v => v._id)
+    // const teams = await Team.find({
+    //   owner: req.params.id
+    // }, { _id: 1 })
+    // const teamIdArr = teams.map(v => v._id)
 
-    const topics = await Topic.find({
-      owner: req.params.id
-    }, { _id: 1 })
-    const topicIdArr = topics.map(v => v._id)
-    const idArr = teamIdArr.concat(topicIdArr)
+    // const topics = await Topic.find({
+    //   owner: req.params.id
+    // }, { _id: 1 })
+    // const topicIdArr = topics.map(v => v._id)
+    // const idArr = teamIdArr.concat(topicIdArr)
     // 找出给我的评论
-    const comments = await Comment.find({
-      to: { $in: idArr }
-    }).populate('owner', 'nickName avatarUrl')
-      .lean()
+    // const comments = await Comment.find({
+    //   to: { $in: idArr }
+    // }).populate('owner', 'nickName avatarUrl')
+    //   .lean()
 
     // 合并
-    const data = messages.concat(comments)
+    const data = messages//.concat(comments)
     data.sort(function (a, b) {
       let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
       let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
@@ -77,15 +77,17 @@ module.exports = router => {
     //未读消息计数
     const user = await User.findById(req.params.id,{latestReadMsg:1})
     
-    let index = 0;
+    // let index = 0;
+    let unRead = false
     const latestRM = user.latestReadMsg?user.latestReadMsg.toString():''
-    for(let i = 0;i<data.length;i++){
-      if(data[i]._id==latestRM) {
-        index=i
+    // for(let i = 0;i<data.length;i++){
+      if(data[0]._id!=latestRM) {
+        // index=i
+        unRead = true
       }
-    }
+    // }
     // console.log(user.latestReadMsg)
-    res.send({msg:data,unreadMsgCount:index})
+    res.send({msg:data,unRead})
   })
 
   //记录已读消息

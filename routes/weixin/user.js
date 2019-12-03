@@ -26,6 +26,8 @@ module.exports = router => {
         res.send(model)
     })
 
+    
+
     //获取用户信息、话题、组队
     router.post('/user', async (req, res) => {
         const data = await User.findById(req.body.id, { openid: 0 })
@@ -47,6 +49,15 @@ module.exports = router => {
             })
             //fail // .populate('teams', 'postUrl locationName good collect location owner.nickName owner.avatarUrl')
             .lean()
+
+            //是否有未读消息
+    // let index = 0;
+    // const latestRM = data.latestReadMsg?data.latestReadMsg.toString():''
+    // for(let i = 0;i<data.length;i++){
+    //   if(data[i]._id==latestRM) {
+    //     index=i
+    //   }
+    // }
 
         const fans = await User.find({
             follow: req.body.id
@@ -101,7 +112,7 @@ module.exports = router => {
 
 
         try {
-            let total = data.teams.concat(data.topics).concat(arr)//.concat(data.joinedTeams)
+            let total = data.teams.concat(data.topics).concat(arr).concat(data.joinedTeams)
             let p = [
                 userController.addDistance(req.body.lat, req.body.lng, total),
                 userController.addCommentCount(total)
