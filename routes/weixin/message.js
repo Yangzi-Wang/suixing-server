@@ -92,7 +92,7 @@ module.exports = router => {
 
   //记录已读消息
   router.post('/readMessages', async (req, res) => {
-    await User.findByIdAndUpdate(req.body.userid, {
+    req.body.msgid!=''&&await User.findByIdAndUpdate(req.body.userid, {
       latestReadMsg: req.body.msgid
     })
     res.send({ success: true })
