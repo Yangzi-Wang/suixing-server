@@ -214,7 +214,7 @@ module.exports = router => {
     router.post('/user/collection', async (req, res) => {
         const collections = await Team.find({
             collect: req.body.id
-        }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1 })
+        }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1, forwardCount:1, status:1 })
             .populate('owner', 'nickName avatarUrl intro').lean()
 
         await userController.addDistance(req.body.lat, req.body.lng, collections)

@@ -88,7 +88,9 @@ module.exports = app => {
         $maxDistance: req.body.maxDistance / 111.12
       }
     }
-    const topics = await Topic.find(options, (err, result) => {
+    const topics = await Topic.find(options, 
+      {postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1, forwardCount:1, status:1},
+      (err, result) => {
       if (err) {
         // return err.status(400).send({   
         //   message: '错误',   
