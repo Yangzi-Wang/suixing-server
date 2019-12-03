@@ -68,7 +68,7 @@ module.exports = router => {
 
     // 合并
     const data = messages//.concat(comments)
-    data.sort(function (a, b) {
+    data!=''&&data.sort(function (a, b) {
       let date1 = a['updatedAt'] || '2019-10-18T17:51:17.846Z'
       let date2 = b['updatedAt'] || '2019-10-18T17:51:17.846Z'
       return date1 > date2 ? -1 : 1
@@ -81,7 +81,7 @@ module.exports = router => {
     let unRead = false
     const latestRM = user.latestReadMsg?user.latestReadMsg.toString():''
     // for(let i = 0;i<data.length;i++){
-      if(data[0]._id!=latestRM) {
+      if(data!=''&&data[0]._id!=latestRM) {
         // index=i
         unRead = true
       }
