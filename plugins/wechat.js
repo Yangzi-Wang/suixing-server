@@ -43,7 +43,7 @@ userController.login = function (req, res) {
             res.send(data._id)
         } else {
             const no = (Math.random()*10000000).toString(16).substr(0,4)+Math.random().toString().substr(2,5)
-            const model = await User.create({ openid: r1.openid, no: no })
+            const model = await User.create({ openid: r1.openid, no: no, nickName:no })
             res.send(model._id)
         }
 
