@@ -85,7 +85,7 @@ module.exports = app => {
     let options = {}
     if (req.body.getNear) {
       options.location = {
-        // $near: [req.body.lat, req.body.lng],
+        $near: [req.body.lat, req.body.lng],
         $maxDistance: req.body.maxDistance / 111.12
       }
     }
@@ -99,6 +99,7 @@ module.exports = app => {
       }
     })
       .populate('owner', 'nickName avatarUrl intro')
+      .sort({updatedAt:1})
       .lean()
     await userController.addDistance(req.body.lat, req.body.lng, topics)
     await userController.addCommentCount(topics)
