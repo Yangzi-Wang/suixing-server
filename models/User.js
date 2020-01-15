@@ -4,6 +4,7 @@ const schema = new mongoose.Schema({
   no: { type: String, unique: true },
   nickName: { type: String },
   avatarUrl:{type:String},
+  virtualAvatarUrl:{type:String},
   openid:{type:String},
   intro: { type: String },
   phone: { type: String },
