@@ -37,6 +37,7 @@ module.exports = app => {
   //删除话题
   router.delete('/topic/:id', async (req, res) => {
     const model = await Topic.findByIdAndDelete(req.params.id)
+    console.log(model)
     await User.findByIdAndUpdate(model.owner, {
       "$pull": {
         "topics": req.params.id,

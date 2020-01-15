@@ -8,6 +8,7 @@ const schema = new mongoose.Schema({
   intro: { type: String },
   phone: { type: String },
   wechat: { type: String },
+  collectionsOpen: { type: Boolean, default: true },
   follow: [
     {type: mongoose.SchemaTypes.ObjectId, ref: 'User'}
   ],
