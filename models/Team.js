@@ -16,7 +16,7 @@ const schema = new mongoose.Schema({
   time: { type: String },
   price: { type: String },
   require: { type: String },
-  postUrl: { type: String },
+  postUrl: [{ type: String }],
   good: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   forwardCount: { type: Number ,default: 0 },
   collect: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
