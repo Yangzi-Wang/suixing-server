@@ -148,6 +148,7 @@ module.exports = app => {
     let team = await Team.findById(req.params.id)
       .populate('owner', 'nickName avatarUrl intro')
       .populate('hasJoin', 'nickName avatarUrl')
+      .populate('manager', 'nickName avatarUrl')
       .populate('labels')
       .lean()
 
@@ -389,8 +390,22 @@ module.exports = app => {
 
   //获取加入组队的成员
   router.get('/teamMember/:id', async (req, res) => {
-    const model = await Team.findById(req.params.id, { hasJoin: 1 }).populate('hasJoin', 'nickName avatarUrl intro')
-    res.send(model.hasJoin)
+    const model = await Team.findById(req.params.id, { hasJoin: 1, manager: 1 })
+    .populate('hasJoin', 'nickName avatarUrl intro')
+    .populate('manager', 'nickName avatarUrl intro')
+    res.send(model)
+  })
+
+  //更新组队管理员
+  router.put('/teamManager', async (req, res) => {
+    const model = await Team.findByIdAndUpdate(req.body.teamid, {
+      "manager": req.body.managers
+    }, {
+      "new": true
+    })
+    const data = await Team.populate(model, { path: 'manager', model: 'User', select: 'nickName avatarUrl intro' })
+
+    res.send(data.manager)
   })
 
   //结束活动

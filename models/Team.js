@@ -8,6 +8,7 @@ const schema = new mongoose.Schema({
   memberNum: { type: String },
   hasJoinNum: { type: Number ,default: 1 },
   hasJoin: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
+  manager: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   location: { type: [Number], index:'2d' },
   city: { type: String },
   distance: { type: Number ,default: 0 },
