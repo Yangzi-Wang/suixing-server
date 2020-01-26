@@ -122,7 +122,8 @@ module.exports = app => {
       }
     }
 
-    const teams = await Team.find(options,{ postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1, forwardCount:1, status:1 })
+    const teams = await Team.find(options,
+      { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1, forwardCount:1, status:1, memberNum:1, hasJoinNum:1 })
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
 
