@@ -535,6 +535,17 @@ module.exports = app => {
   })
 
 
+  //获取页面二维码
+  router.get('/acode', async (req, res) => {
+    try{
+      const data = await userController.getwxacode()
+    console.log(data)
+    res.send(data)
+    }catch{
+      res.send({success:false})
+    }
+    
+  })
 
   app.use('/weixin/api', router)
 }

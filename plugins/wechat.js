@@ -42,8 +42,8 @@ userController.login = function (req, res) {
         if (data) {
             res.send(data._id)
         } else {
-            const no = (Math.random()*10000000).toString(16).substr(0,4)+Math.random().toString().substr(2,5)
-            const model = await User.create({ openid: r1.openid, no: no, nickName:no })
+            const no = (Math.random() * 10000000).toString(16).substr(0, 4) + Math.random().toString().substr(2, 5)
+            const model = await User.create({ openid: r1.openid, no: no, nickName: no })
             res.send(model._id)
         }
 
@@ -174,5 +174,38 @@ userController.addCommentCount = function (objs) {
     })
 }
 
+userController.getwxacode = function () {
+    return new Promise(async function (resolve, reject) {
+        let appId = "wx6c5657bed2744574"
+        let secret = "e1ef28e85b3a1e24b8e50c38f4e292bc"
+        let opts = {
+            url: `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${secret}`
+        }
+        let r1 = await use.open(opts)
+        r1 = JSON.parse(r1)
+        console.log(r1)
+        if (r1.access_token) {
+            let requestData = {
+                scene:'1',
+                page: 'pages/index/index',
+                width: 200,
+            }
+            let r2 = await use.open({
+                url: `https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=${r1.access_token}`,
+                method: "POST",
+                json: true,
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: requestData
+            })
+            
+            resolve(r2)
+        } else {
+            console.log(r1.errmsg)
+        }
+        reject()
+    })
+}
 
 module.exports = userController
