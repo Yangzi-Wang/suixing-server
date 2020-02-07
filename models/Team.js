@@ -6,7 +6,7 @@ const schema = new mongoose.Schema({
   title: { type: String },
   content: { type: String },
   memberNum: { type: String },
-  hasJoinNum: { type: Number ,default: 1 },
+  // hasJoinNum: { type: Number ,default: 1 },
   hasJoin: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   manager: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   location: { type: [Number], index:'2d' },
@@ -27,5 +27,10 @@ const schema = new mongoose.Schema({
   timestamps: true
 })
 
+schema.virtual('hasJoinNum').get(function () {
+  return this.hasJoin.length+1
+});
+
+schema.set('toObject', { virtuals: true })
 schema.index({location: '2d'});
 module.exports = mongoose.model('Team', schema)
