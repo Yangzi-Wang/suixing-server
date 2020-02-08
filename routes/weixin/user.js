@@ -40,12 +40,12 @@ module.exports = router => {
             })
             .populate({
                 path: 'teams',
-                select: 'postUrl locationName good collect forwardCount location owner createdAt status memberNum hasJoinNum',
+                select: 'postUrl locationName good collect forwardCount location owner createdAt status memberNum hasJoin',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             .populate({
                 path: 'joinedTeams',
-                select: 'postUrl locationName good collect forwardCount location owner createdAt status memberNum hasJoinNum',
+                select: 'postUrl locationName good collect forwardCount location owner createdAt status memberNum hasJoin',
                 populate: { path: 'owner', select: 'nickName avatarUrl' }
             })
             //fail // .populate('teams', 'postUrl locationName good collect location owner.nickName owner.avatarUrl')
@@ -215,7 +215,7 @@ module.exports = router => {
     router.post('/user/collection', async (req, res) => {
         const collections = await Team.find({
             collect: req.body.id
-        }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1, forwardCount:1, status:1, memberNum:1, hasJoinNum:1 })
+        }, { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1, forwardCount:1, status:1, memberNum:1, hasJoin:1 })
             .populate('owner', 'nickName avatarUrl intro').lean()
 
         await userController.addDistance(req.body.lat, req.body.lng, collections)

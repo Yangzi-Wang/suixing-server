@@ -123,7 +123,7 @@ module.exports = app => {
     }
 
     const teams = await Team.find(options,
-      { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1, forwardCount:1, status:1, memberNum:1, hasJoinNum:1 })
+      { postUrl: 1, locationName: 1, good: 1, collect: 1, location: 1, createdAt: 1, forwardCount:1, status:1, memberNum:1, hasJoin:1 })
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
 
@@ -139,7 +139,6 @@ module.exports = app => {
     //   if(cm[0])
     //   item.commentCount = cm[0].total
     // })
-    // console.log(teams)
 
     res.send(teams)
   })
@@ -163,6 +162,7 @@ module.exports = app => {
     team.commentCount = comments.length
     // team.goodCount = team.good.length
     // team.collectCount = team.collect.length
+    team.hasJoinNum = team.hasJoin.length + 1
 
     res.send({ team: team, comments: comments })
   })
@@ -321,14 +321,18 @@ module.exports = app => {
 
   //获取讨论组列表
   router.get('/team/chatList/:id', async (req, res) => {
-    const data = await Team.find({
+    let data = await Team.find({
       "$or": [
         { "owner": req.params.id },
         { "hasJoin": req.params.id }
       ]
-    }, { postUrl: 1, hasJoinNum: 1, memberNum: 1, title: 1, owner: 1 })
+    }, { postUrl: 1, hasJoin: 1, memberNum: 1, title: 1, owner: 1 })
       .populate('owner', 'nickName avatarUrl intro')
       .lean()
+
+      data.forEach(i=>{
+        i.hasJoinNum = i.hasJoin.length+1
+      })
 
     res.send(data)
   })
@@ -348,7 +352,7 @@ module.exports = app => {
       "$addToSet": {
         "hasJoin": req.body.userid
       },
-      '$inc': { 'hasJoinNum': 1 }
+      // '$inc': { 'hasJoinNum': 1 }
     }, {
       "new": true
     })
@@ -371,7 +375,7 @@ module.exports = app => {
       "$pull": {
         "hasJoin": req.body.userid
       },
-      '$inc': { 'hasJoinNum': -1 }
+      // '$inc': { 'hasJoinNum': -1 }
     }, {
       "new": true
     })

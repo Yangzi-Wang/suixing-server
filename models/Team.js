@@ -27,10 +27,6 @@ const schema = new mongoose.Schema({
   timestamps: true
 })
 
-schema.virtual('hasJoinNum').get(function () {
-  return this.hasJoin.length+1
-});
 
-schema.set('toObject', { virtuals: true })
 schema.index({location: '2d'});
 module.exports = mongoose.model('Team', schema)

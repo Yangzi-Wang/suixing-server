@@ -20,7 +20,7 @@ module.exports = router => {
     const message = await Message.findByIdAndUpdate(req.params.id, { status: 1 })
     //人数加一
     await Team.findByIdAndUpdate(message.team, {
-      '$inc': { hasJoinNum: 1 },
+      // '$inc': { hasJoinNum: 1 },
       "$addToSet": {
         "hasJoin": message.participant
       }
