@@ -96,16 +96,16 @@ module.exports = router => {
 
         let arr = []
         forwards_topic.forEach((item) => {
-            arr.push(item.from)
+            item.from&&arr.push(item.from)
         })
         forwards_team.forEach((item) => {
-            arr.push(item.from)
+            item.from&&arr.push(item.from)
         })
         // console.log(forwards_topic[1].from.distance)
 
 
         try {
-            let total = data.teams.concat(data.topics).concat(arr).concat(data.joinedTeams)
+            let total = data.teams.concat(data.topics||[]).concat(arr).concat(data.joinedTeams||[])
             let p = [
                 userController.addDistance(req.body.lat, req.body.lng, total),
                 userController.addCommentCount(total)
