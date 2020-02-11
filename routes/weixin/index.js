@@ -77,6 +77,13 @@ module.exports = app => {
     //   await Comment.findByIdAndDelete(item._id)
     // })
 
+    //删除申请的信息,提示组队已结束或删除
+    const messages = await Message.updateMany(
+        { team: req.params.id, status: 0 },
+        {
+          $set: {status : 5}
+      })
+
     res.send({ success: true })
   })
 

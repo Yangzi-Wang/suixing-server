@@ -8,7 +8,7 @@ module.exports = router => {
 
 
 
-  //0申请、1同意已加入、2加入后被退出、3主动退出、4邀请
+  //0申请、1同意已加入、2加入后被退出、3主动退出、4邀请、5组队已删除且正在申请
   //申请加入组队
   router.post('/message', async (req, res) => {
     await Message.create(req.body)
@@ -41,7 +41,8 @@ module.exports = router => {
         { participant: req.params.id, status: 1 },
         { participant: req.params.id, status: 2 },
         { participant: req.params.id, status: 4 },
-        { owner: req.params.id, status: 0 }
+        { participant: req.params.id, status: 5 },
+        { owner: req.params.id, status: 0 },
       ]
     })
       .populate('owner', 'nickName avatarUrl')
